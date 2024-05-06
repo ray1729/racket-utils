@@ -5,6 +5,7 @@
          (only-in srfi/1 alist-cons))
 
 (provide make-client
+         access-token-auth
          api-url
          get
          get-paged
@@ -12,14 +13,14 @@
          list-group-projects
          list-groups)
 
-(struct client (url token))
+(struct client (url auth))
 
-(define (gitlab-token-auth token)
+(define (access-token-auth token)
   (lambda (uri headers params)
     (values (hash-set headers 'private-token token) params)))
 
-(define (make-client #:url (url (string->url "https://gitlab.com")) #:token token)
-  (client url token))
+(define (make-client #:url (url (string->url "https://gitlab.com")) #:auth auth)
+  (client url auth))
 
 (define (api-url c path-parts (query-params '()))
   (struct-copy url
@@ -29,7 +30,7 @@
 
 (define (get c path-parts (query-params '()))
   (let* ((u (api-url c path-parts query-params))
-         (res (http:get u #:auth (gitlab-token-auth (client-token c)))))
+         (res (http:get u #:auth (client-auth c))))
     (if (>= (http:response-status-code res) 300)
         (raise-user-error 'gitlab/get (format "GET ~a: ~a" (url->string u) (http:response-status-message res)))
         res)))
