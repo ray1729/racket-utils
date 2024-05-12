@@ -1,6 +1,6 @@
 #lang info
 (define collection "racket-utils")
-(define deps '("base" "http-easy-lib"))
+(define deps '("base" "http-easy-lib" "html-parsing"))
 (define build-deps '("scribble-lib" "racket-doc" "rackunit-lib"))
 ;;(define scribblings '(("scribblings/tryme.scrbl" ())))
 (define pkg-desc "Some utilities for working with racket")
