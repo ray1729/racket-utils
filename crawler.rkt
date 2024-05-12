@@ -20,7 +20,7 @@
      (let ((x (html->xexp (bytes->string/utf-8 body))))
        (handler url x)
        (extract-links (string->url url) x)))
-    (_ '())))
+    (_ (set))))
 
 (define (host=? host)
   (lambda (u) (string=? host (url-host (string->url u)))))
