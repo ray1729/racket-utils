@@ -10,11 +10,11 @@
 (define (url-without-fragment u)
   (struct-copy url u (fragment #f)))
 
-(define (extract-links url x)
+(define (extract-links base-url xpr)
   (list->set (map url->string
                   (filter (lambda (u) (or (string=? (url-scheme u) "http") (string=? (url-scheme u) "https")))
-                          (map (lambda (u) (url-without-fragment (combine-url/relative url u)))
-                               (se-path*/list '(a @ href) x))))))
+                          (map (lambda (u) (url-without-fragment (combine-url/relative base-url u)))
+                               (se-path*/list '(a @ href) xpr))))))
 
 (define (process url handler)
   (match (http:get url)
@@ -31,11 +31,11 @@
   (lambda () (sleep (random n))))
 
 (define (crawl url handler #:limit (limit #f) #:delay (delay (lambda () #f)) #:wanted? (wanted? (lambda (url) #t)))
-  (let crawl ((todo (set url)) (seen (set)))
-    (unless (or (set-empty? todo) (and limit (>= (set-count seen) limit)))
-      (if (not (wanted? (set-first todo)))
-          (crawl (set-rest todo) seen)
-          (let ((links (process (set-first todo) handler))
-                (seen (set-add seen (set-first todo))))
+  (let crawl ((frontier (set url)) (visited (set)))
+    (unless (or (set-empty? frontier) (and limit (>= (set-count visited) limit)))
+      (if (not (wanted? (set-first frontier)))
+          (crawl (set-rest frontier) visited)
+          (let ((links (process (set-first frontier) handler))
+                (visited (set-add visited (set-first frontier))))
             (delay)
-            (crawl (set-union (set-rest todo) (set-subtract links seen)) seen))))))
+            (crawl (set-union (set-rest frontier) (set-subtract links visited)) visited))))))
