@@ -8,11 +8,13 @@
 (provide crawl host=? delay-upto)
 
 (define (url-without-fragment u)
-  (url->string (struct-copy url u (fragment #f))))
+  (struct-copy url u (fragment #f)))
 
 (define (extract-links url x)
-  (list->set (map (lambda (u) (url-without-fragment (combine-url/relative url u)))
-                  (se-path*/list '(a @ href) x))))
+  (list->set (map url->string
+                  (filter (lambda (u) (or (string=? (url-scheme u) "http") (string=? (url-scheme u) "https")))
+                          (map (lambda (u) (url-without-fragment (combine-url/relative url u)))
+                               (se-path*/list '(a @ href) x))))))
 
 (define (process url handler)
   (match (http:get url)
